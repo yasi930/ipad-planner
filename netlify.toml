@@ -1,0 +1,40 @@
+# Netlify 設定ファイル
+# Netlifyにドラッグ&ドロップでデプロイするための設定
+
+[build]
+  publish = "."
+
+# カスタムヘッダーの設定（PWA・セキュリティ強化）
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
+# Service Worker の正しいContent-Type設定
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Content-Type = "application/javascript"
+    Cache-Control = "no-cache"
+
+# マニフェストの正しいContent-Type設定
+[[headers]]
+  for = "/manifest.json"
+  [headers.values]
+    Content-Type = "application/manifest+json"
+
+# キャッシュ設定（静的アセット）
+[[headers]]
+  for = "/icon-*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# SPA対応（全てのルートをindex.htmlにリダイレクト）
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

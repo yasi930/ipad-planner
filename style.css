@@ -207,10 +207,20 @@ body {
 /* --- 手書きモードON時のスクロール制御 --- */
 .drawing-mode-active {
     touch-action: none; /* ビュー全体のタッチジェスチャー（スクロール・ズーム）を無効化 */
+    /* 手書きノート用のグリッド（方眼紙）背景を表示 */
+    background-image: 
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-color: rgba(15, 23, 42, 0.98) !important; /* 不透明にして背後のタイムライン等を完全に隠す */
 }
 .drawing-mode-active .daily-timeline {
-    overflow-y: hidden; /* スクロールバーをロックし、手書き中の誤スクロールを防止 */
+    overflow-y: hidden;
     touch-action: none;
+}
+
+#toggle-panel-btn {
+    display: none; /* デフォルトではドロワーボタンは非表示 */
 }
 
 /* --- iPad 縦向き (ポートレート) 用のレスポンシブ対応 --- */
@@ -224,6 +234,7 @@ body {
         width: 100%;
         height: 100%;
         gap: 12px;
+        position: relative;
     }
 
     /* サイドバーを上部ヘッダーとして横並びに再配置 */
@@ -277,38 +288,56 @@ body {
         font-size: 1.3rem;
     }
 
+    /* ドロワーボタンを表示 */
+    #toggle-panel-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     /* ビューコンテナの余白調整 */
     .view-container {
         padding: 16px;
         border-radius: 16px;
     }
 
-    /* 詳細パネル（下部に配置） */
+    /* 詳細パネル（縦長時は右からスライドインするドロワーに変更） */
     .detail-panel {
-        width: 100%;
-        height: 200px;
-        flex-shrink: 0;
-        flex-direction: row;
+        position: fixed;
+        right: -320px; /* 画面外に隠す */
+        top: 20px;
+        height: calc(100vh - 40px);
+        width: 300px;
+        z-index: 100;
+        transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-direction: column;
         gap: 20px;
-        padding: 16px 20px;
-        border-radius: 16px;
+        padding: 24px;
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.98); /* ドロワーを不透明にして視認性を確保 */
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+    }
+    .detail-panel.drawer-open {
+        right: 20px; /* 画面内にスライドイン */
     }
     .panel-header {
-        display: none; /* 省スペースのため非表示 */
+        display: block; /* ヘッダーを再表示 */
     }
     .timeline-container {
         flex-grow: 1;
-        border-bottom: none;
-        border-right: 1px solid var(--glass-border);
-        padding-bottom: 0;
-        padding-right: 20px;
+        border-bottom: 1px solid var(--glass-border);
+        border-right: none;
+        padding-bottom: 16px;
+        padding-right: 0;
     }
     .quick-memo {
-        width: 240px;
-        height: 100%;
+        width: 100%;
+        height: 180px;
     }
 
-    /* 日次表示（タイムラインとメモエリアを縦並びにして描画スペースを確保） */
+    /* 日次表示（タイムラインと今日のタスク・メモエリアを縦並びにして、手書きとメモスペースを確保） */
     .daily-grid {
         grid-template-columns: 1fr;
         grid-template-rows: 1.2fr 0.8fr;
@@ -326,5 +355,6 @@ body {
         padding: 20px;
     }
 }
+
 
 

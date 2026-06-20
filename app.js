@@ -47,7 +47,8 @@ const elements = {
     toolMarker: document.getElementById('tool-marker'),
     toolEraser: document.getElementById('tool-eraser'),
     drawingColorOptions: document.querySelectorAll('#drawing-color-picker .color-option'),
-    clearCanvasBtn: document.getElementById('clear-canvas-btn')
+    clearCanvasBtn: document.getElementById('clear-canvas-btn'),
+    togglePanelBtn: document.getElementById('toggle-panel-btn')
 };
 
 let selectedColor = '#8b5cf6';
@@ -161,6 +162,11 @@ function setupEventListeners() {
                 toggleDrawingMode();
             }
             
+            // ビュー切り替え時にドロワーを閉じる
+            if (elements.rightPanel) {
+                elements.rightPanel.classList.remove('drawer-open');
+            }
+            
             render();
         });
     });
@@ -213,6 +219,20 @@ function setupEventListeners() {
         state.memos[formatDateString(state.selectedDate)] = e.target.value;
         saveData();
     });
+
+    if (elements.togglePanelBtn) {
+        elements.togglePanelBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            elements.rightPanel.classList.toggle('drawer-open');
+        });
+        
+        // パネルの外をクリックしたときに閉じる処理
+        document.addEventListener('click', (e) => {
+            if (!elements.rightPanel.contains(e.target) && e.target !== elements.togglePanelBtn) {
+                elements.rightPanel.classList.remove('drawer-open');
+            }
+        });
+    }
 }
 
 // 予定を削除する
@@ -300,18 +320,30 @@ function setupCanvas() {
 
 function toggleDrawingMode() {
     drawState.isDrawingMode = !drawState.isDrawingMode;
+    const dailyGrid = document.querySelector('.daily-grid');
     if (drawState.isDrawingMode) {
         elements.toggleDrawModeBtn.textContent = '✍️ 手書きモード: ON';
         elements.toggleDrawModeBtn.style.background = '#ec4899'; // ピンク色で強調
         elements.dailyCanvas.classList.remove('pointer-events-none');
         elements.drawingTools.classList.remove('hidden');
         elements.dailyView.classList.add('drawing-mode-active');
+        
+        // 手書きモードONのときはタイムライン等のスクロール要素を非表示にし、画面を固定
+        if (dailyGrid) {
+            dailyGrid.style.display = 'none';
+        }
     } else {
         elements.toggleDrawModeBtn.textContent = '✍️ 手書きモード: OFF';
         elements.toggleDrawModeBtn.style.background = 'var(--primary)';
         elements.dailyCanvas.classList.add('pointer-events-none');
         elements.drawingTools.classList.add('hidden');
         elements.dailyView.classList.remove('drawing-mode-active');
+        
+        // 再表示
+        if (dailyGrid) {
+            dailyGrid.style.display = '';
+        }
+        
         saveCurrentCanvas();
     }
 }

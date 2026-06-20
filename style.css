@@ -203,3 +203,128 @@ body {
 .tool-btn:hover { background: rgba(255,255,255,0.1); }
 .tool-btn.active { background: rgba(255,255,255,0.2); box-shadow: inset 0 0 0 2px var(--primary); }
 .tool-separator { width: 1px; height: 24px; background: rgba(255,255,255,0.2); margin: 0 8px; }
+
+/* --- 手書きモードON時のスクロール制御 --- */
+.drawing-mode-active {
+    touch-action: none; /* ビュー全体のタッチジェスチャー（スクロール・ズーム）を無効化 */
+}
+.drawing-mode-active .daily-timeline {
+    overflow-y: hidden; /* スクロールバーをロックし、手書き中の誤スクロールを防止 */
+    touch-action: none;
+}
+
+/* --- iPad 縦向き (ポートレート) 用のレスポンシブ対応 --- */
+@media (max-width: 960px) {
+    body {
+        padding: 10px;
+    }
+    
+    .app-container {
+        flex-direction: column;
+        width: 100%;
+        height: 100%;
+        gap: 12px;
+    }
+
+    /* サイドバーを上部ヘッダーとして横並びに再配置 */
+    .sidebar {
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        flex-shrink: 0;
+        border-radius: 16px;
+    }
+    .user-profile {
+        margin-bottom: 0;
+        gap: 10px;
+    }
+    .user-profile h2 {
+        font-size: 1.1rem;
+    }
+    .avatar {
+        width: 36px;
+        height: 36px;
+    }
+    .nav-menu {
+        flex-direction: row;
+        gap: 8px;
+    }
+    .nav-btn {
+        padding: 8px 14px;
+        font-size: 0.9rem;
+    }
+    .nav-btn.active {
+        border-left: none;
+        border-bottom: 3px solid var(--primary);
+        border-radius: 8px;
+    }
+
+    /* メインコンテンツエリア */
+    .main-content {
+        flex-grow: 1;
+        height: 0; /* 高さをflex分配するために必要 */
+        gap: 12px;
+    }
+    .main-header {
+        height: 64px;
+        padding: 0 20px;
+        border-radius: 16px;
+    }
+    .main-header h1 {
+        font-size: 1.3rem;
+    }
+
+    /* ビューコンテナの余白調整 */
+    .view-container {
+        padding: 16px;
+        border-radius: 16px;
+    }
+
+    /* 詳細パネル（下部に配置） */
+    .detail-panel {
+        width: 100%;
+        height: 200px;
+        flex-shrink: 0;
+        flex-direction: row;
+        gap: 20px;
+        padding: 16px 20px;
+        border-radius: 16px;
+    }
+    .panel-header {
+        display: none; /* 省スペースのため非表示 */
+    }
+    .timeline-container {
+        flex-grow: 1;
+        border-bottom: none;
+        border-right: 1px solid var(--glass-border);
+        padding-bottom: 0;
+        padding-right: 20px;
+    }
+    .quick-memo {
+        width: 240px;
+        height: 100%;
+    }
+
+    /* 日次表示（タイムラインとメモエリアを縦並びにして描画スペースを確保） */
+    .daily-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1.2fr 0.8fr;
+        gap: 12px;
+    }
+    .daily-timeline {
+        padding-right: 8px;
+    }
+    .daily-memo-area {
+        padding: 12px;
+    }
+    
+    /* モーダルの調整 */
+    .modal-content {
+        padding: 20px;
+    }
+}
+
+

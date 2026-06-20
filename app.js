@@ -265,6 +265,29 @@ function setupCanvas() {
     window.addEventListener('pointerup', stopDrawing);
     window.addEventListener('pointercancel', stopDrawing);
     
+    // タッチによるスクロールやジェスチャーを防止（iOS Safari等で手書き中のスクロールを防ぐ）
+    elements.dailyCanvas.addEventListener('touchstart', (e) => {
+        if (drawState.isDrawingMode) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+    elements.dailyCanvas.addEventListener('touchmove', (e) => {
+        if (drawState.isDrawingMode) {
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // アプリ全体でのタッチスクロールを防止（iOSでのバウンススクロールや背後のスクロール判定のバグを回避）
+    document.addEventListener('touchmove', (e) => {
+        if (drawState.isDrawingMode) {
+            // 手書きツールバーやトグルボタンは通常のタップ操作を通したい
+            if (e.target.closest('#drawing-tools') || e.target.closest('#toggle-draw-mode')) {
+                return;
+            }
+            e.preventDefault();
+        }
+    }, { passive: false });
+    
     // ウィンドウリサイズ時の処理
     window.addEventListener('resize', () => {
         if(state.currentView === 'daily') {
@@ -282,11 +305,13 @@ function toggleDrawingMode() {
         elements.toggleDrawModeBtn.style.background = '#ec4899'; // ピンク色で強調
         elements.dailyCanvas.classList.remove('pointer-events-none');
         elements.drawingTools.classList.remove('hidden');
+        elements.dailyView.classList.add('drawing-mode-active');
     } else {
         elements.toggleDrawModeBtn.textContent = '✍️ 手書きモード: OFF';
         elements.toggleDrawModeBtn.style.background = 'var(--primary)';
         elements.dailyCanvas.classList.add('pointer-events-none');
         elements.drawingTools.classList.add('hidden');
+        elements.dailyView.classList.remove('drawing-mode-active');
         saveCurrentCanvas();
     }
 }

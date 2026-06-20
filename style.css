@@ -187,7 +187,7 @@ body {
 
 /* --- 手書き機能 (Canvas) --- */
 .daily-header-actions { display: flex; justify-content: flex-end; margin-bottom: 12px; z-index: 20; position: relative; }
-.daily-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: crosshair; }
+.daily-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; cursor: crosshair; touch-action: none; }
 .pointer-events-none { pointer-events: none; }
 
 .drawing-tools {

@@ -60,7 +60,8 @@ const drawState = {
     tool: 'pen', // 'pen', 'marker', 'eraser'
     color: '#f8fafc',
     lastX: 0,
-    lastY: 0
+    lastY: 0,
+    saveTimeout: null
 };
 
 // 初期化
@@ -308,6 +309,13 @@ function getPointerPos(e) {
 function startDrawing(e) {
     if (!drawState.isDrawingMode) return;
     drawState.isDrawing = true;
+    
+    // 描画が開始されたら、保留中の保存予約をキャンセル
+    if (drawState.saveTimeout) {
+        clearTimeout(drawState.saveTimeout);
+        drawState.saveTimeout = null;
+    }
+
     const pos = getPointerPos(e);
     drawState.lastX = pos.x;
     drawState.lastY = pos.y;
@@ -321,8 +329,7 @@ function startDrawing(e) {
         ctx.globalCompositeOperation = 'source-over';
         ctx.globalAlpha = 1.0;
         ctx.strokeStyle = drawState.color;
-        // 筆圧対応（Pencilの場合は e.pressure を使用できる）
-        const pressure = e.pressure !== undefined ? e.pressure : 0.5;
+        const pressure = e.pressure !== undefined && e.pressure > 0 ? e.pressure : 0.5;
         ctx.lineWidth = 2 + (pressure * 2);
     } else if (drawState.tool === 'marker') {
         ctx.globalCompositeOperation = 'source-over';
@@ -334,35 +341,61 @@ function startDrawing(e) {
         ctx.globalAlpha = 1.0;
         ctx.lineWidth = 30;
     }
+
+    // タップだけでもドットを描画できるように少し描画
+    ctx.beginPath();
+    ctx.moveTo(drawState.lastX, drawState.lastY);
+    ctx.lineTo(pos.x + 0.1, pos.y + 0.1);
+    ctx.stroke();
 }
 
 function draw(e) {
     if (!drawState.isDrawing || !drawState.isDrawingMode) return;
-    e.preventDefault(); // スクロール等のデフォルト動作を防止
+    e.preventDefault();
     
-    const pos = getPointerPos(e);
     const ctx = drawState.ctx;
+    const rect = elements.dailyCanvas.getBoundingClientRect();
+    
+    // getCoalescedEvents を使って Apple Pencil 等のサンプリング周波数の高い入力を補間して滑らかにする
+    const events = (e.getCoalescedEvents && e.getCoalescedEvents()) || [e];
     
     ctx.beginPath();
     ctx.moveTo(drawState.lastX, drawState.lastY);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
     
-    drawState.lastX = pos.x;
-    drawState.lastY = pos.y;
+    let lastX = drawState.lastX;
+    let lastY = drawState.lastY;
+    
+    for (let ev of events) {
+        const x = ev.clientX - rect.left;
+        const y = ev.clientY - rect.top;
+        ctx.lineTo(x, y);
+        lastX = x;
+        lastY = y;
+    }
+    
+    ctx.stroke();
+    drawState.lastX = lastX;
+    drawState.lastY = lastY;
 }
 
 function stopDrawing() {
-    if(drawState.isDrawing) {
+    if (drawState.isDrawing) {
         drawState.isDrawing = false;
-        saveCurrentCanvas(); // 描き終わるたびに保存（Auto Save）
+        // toDataURL() は非常に重いため、ペンを離すたびではなく操作停止1秒後に保存を遅延実行(デバウンス)
+        if (drawState.saveTimeout) clearTimeout(drawState.saveTimeout);
+        drawState.saveTimeout = setTimeout(() => {
+            saveCurrentCanvas();
+        }, 1000);
     }
 }
 
 function saveCurrentCanvas() {
+    if (drawState.saveTimeout) {
+        clearTimeout(drawState.saveTimeout);
+        drawState.saveTimeout = null;
+    }
     if (state.currentView !== 'daily') return;
     const dateStr = formatDateString(state.selectedDate);
-    // 空かどうかの判定（より厳密にはピクセル判定が必要ですが、今回は単純に保存）
     const dataUrl = elements.dailyCanvas.toDataURL('image/png');
     state.drawings[dateStr] = dataUrl;
     saveData();

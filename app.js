@@ -47,8 +47,7 @@ const elements = {
     toolMarker: document.getElementById('tool-marker'),
     toolEraser: document.getElementById('tool-eraser'),
     drawingColorOptions: document.querySelectorAll('#drawing-color-picker .color-option'),
-    clearCanvasBtn: document.getElementById('clear-canvas-btn'),
-    togglePanelBtn: document.getElementById('toggle-panel-btn')
+    clearCanvasBtn: document.getElementById('clear-canvas-btn')
 };
 
 let selectedColor = '#8b5cf6';
@@ -162,11 +161,6 @@ function setupEventListeners() {
                 toggleDrawingMode();
             }
             
-            // ビュー切り替え時にドロワーを閉じる
-            if (elements.rightPanel) {
-                elements.rightPanel.classList.remove('drawer-open');
-            }
-            
             render();
         });
     });
@@ -219,20 +213,6 @@ function setupEventListeners() {
         state.memos[formatDateString(state.selectedDate)] = e.target.value;
         saveData();
     });
-
-    if (elements.togglePanelBtn) {
-        elements.togglePanelBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            elements.rightPanel.classList.toggle('drawer-open');
-        });
-        
-        // パネルの外をクリックしたときに閉じる処理
-        document.addEventListener('click', (e) => {
-            if (!elements.rightPanel.contains(e.target) && e.target !== elements.togglePanelBtn) {
-                elements.rightPanel.classList.remove('drawer-open');
-            }
-        });
-    }
 }
 
 // 予定を削除する
